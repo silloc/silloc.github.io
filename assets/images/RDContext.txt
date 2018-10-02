@@ -1,0 +1,220 @@
+using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
+
+namespace GFCRotation.Models
+{
+    public partial class RotationDatabaseContext : DbContext
+    {
+        public RotationDatabaseContext()
+        {
+        }
+        public RotationDatabaseContext(DbContextOptions<RotationDatabaseContext> options)
+            : base(options)
+        {
+        }
+        public virtual DbSet<Interchange> Interchange { get; set; }
+        public virtual DbSet<PlayedMatch> PlayedMatch { get; set; }
+        public virtual DbSet<Player> Player { get; set; }
+        public virtual DbSet<PlayerInMatch> PlayerInMatch { get; set; }
+        public virtual DbSet<Rmatch> Rmatch { get; set; }
+        public virtual DbSet<Rotation> Rotation { get; set; }
+        public virtual DbSet<Team> Team { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Interchange>(entity =>
+            {
+                entity.Property(e => e.InterchangeId).HasColumnName("interchangeID");
+
+                entity.Property(e => e.Iquarter)
+                    .HasColumnName("IQuarter")
+                    .HasMaxLength(5)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.Itime).HasColumnName("ITime");
+
+                entity.Property(e => e.MatchId).HasColumnName("MatchID");
+
+                entity.Property(e => e.PlayerOff)
+                    .HasColumnName("PlayerOFF")
+                    .HasMaxLength(40)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.PlayerOffId).HasColumnName("PlayerOffID");
+
+                entity.Property(e => e.PlayerOn)
+                    .HasMaxLength(40)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.PlayerOnId).HasColumnName("PlayerOnID");
+
+                entity.Property(e => e.TeamName)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.Match)
+                    .WithMany(p => p.Interchange)
+                    .HasForeignKey(d => d.MatchId)
+                    .HasConstraintName("fk_MatchID2");
+
+                entity.HasOne(d => d.PlayerOffNavigation)
+                    .WithMany(p => p.InterchangePlayerOffNavigation)
+                    .HasForeignKey(d => d.PlayerOffId)
+                    .HasConstraintName("FK__Interchan__Playe__2FCF1A8A");
+
+                entity.HasOne(d => d.PlayerOnNavigation)
+                    .WithMany(p => p.InterchangePlayerOnNavigation)
+                    .HasForeignKey(d => d.PlayerOnId)
+                    .HasConstraintName("FK__Interchan__Playe__30C33EC3");
+
+                entity.HasOne(d => d.TeamNameNavigation)
+                    .WithMany(p => p.Interchange)
+                    .HasForeignKey(d => d.TeamName)
+                    .HasConstraintName("FK__Interchan__TeamN__2EDAF651");
+            });
+
+            modelBuilder.Entity<PlayedMatch>(entity =>
+            {
+                entity.HasKey(e => e.PlayedId);
+
+                entity.Property(e => e.PlayedId).HasColumnName("PlayedID");
+
+                entity.Property(e => e.MatchId).HasColumnName("MatchID");
+
+                entity.Property(e => e.PlayerId).HasColumnName("PlayerID");
+
+                entity.HasOne(d => d.Match)
+                    .WithMany(p => p.PlayedMatch)
+                    .HasForeignKey(d => d.MatchId)
+                    .HasConstraintName("FK__PlayedMat__Match__2A164134");
+
+                entity.HasOne(d => d.Player)
+                    .WithMany(p => p.PlayedMatch)
+                    .HasForeignKey(d => d.PlayerId)
+                    .HasConstraintName("FK__PlayedMat__Playe__29221CFB");
+            });
+
+            modelBuilder.Entity<Player>(entity =>
+            {
+                entity.Property(e => e.PlayerId).HasColumnName("PlayerID");
+
+                entity.Property(e => e.Nname)
+                    .HasMaxLength(40)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.TeamName)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.TeamNameNavigation)
+                    .WithMany(p => p.Player)
+                    .HasForeignKey(d => d.TeamName)
+                    .HasConstraintName("fk_TeamName");
+            });
+
+            modelBuilder.Entity<PlayerInMatch>(entity =>
+            {
+                entity.HasKey(e => e.PlayerInMatch1);
+
+                entity.Property(e => e.PlayerInMatch1).HasColumnName("PlayerInMatch");
+
+                entity.Property(e => e.MatchId).HasColumnName("MatchID");
+
+                entity.Property(e => e.PlayerId).HasColumnName("PlayerID");
+
+                entity.Property(e => e.Q1time).HasColumnName("Q1Time");
+
+                entity.Property(e => e.Q2time).HasColumnName("Q2Time");
+
+                entity.Property(e => e.Q3time).HasColumnName("Q3Time");
+
+                entity.Property(e => e.Q4time).HasColumnName("Q4Time");
+
+                entity.Property(e => e.TeamName)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.Match)
+                    .WithMany(p => p.PlayerInMatch)
+                    .HasForeignKey(d => d.MatchId)
+                    .HasConstraintName("FK__PlayerInM__Match__2B0A656D");
+
+                entity.HasOne(d => d.Player)
+                    .WithMany(p => p.PlayerInMatch)
+                    .HasForeignKey(d => d.PlayerId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_Name");
+
+                entity.HasOne(d => d.TeamNameNavigation)
+                    .WithMany(p => p.PlayerInMatch)
+                    .HasForeignKey(d => d.TeamName)
+                    .HasConstraintName("FK__PlayerInM__TeamN__2DE6D218");
+            });
+
+            modelBuilder.Entity<Rmatch>(entity =>
+            {
+                entity.HasKey(e => e.MatchId);
+
+                entity.ToTable("RMatch");
+
+                entity.Property(e => e.MatchId).HasColumnName("MatchID");
+
+                entity.Property(e => e.AwayTeam)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.HomeTeam)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.MatchData).HasColumnType("datetime");
+
+                entity.Property(e => e.Q1totalTime).HasColumnName("Q1TotalTime");
+
+                entity.Property(e => e.Q2totalTime).HasColumnName("Q2TotalTime");
+
+                entity.Property(e => e.Q3totalTime).HasColumnName("Q3TotalTime");
+
+                entity.Property(e => e.Q4totalTime).HasColumnName("Q4TotalTime");
+
+                entity.Property(e => e.TotalTime).HasColumnName("TotalTime");
+            });
+
+            modelBuilder.Entity<Rotation>(entity =>
+            {
+                entity.Property(e => e.RotationId).HasColumnName("RotationID");
+
+                entity.Property(e => e.MatchId).HasColumnName("MatchID");
+
+                entity.Property(e => e.RotationType)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.TeamName)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.HasOne(d => d.Match)
+                    .WithMany(p => p.Rotation)
+                    .HasForeignKey(d => d.MatchId)
+                    .HasConstraintName("fk_MatchID");
+
+                entity.HasOne(d => d.TeamNameNavigation)
+                    .WithMany(p => p.Rotation)
+                    .HasForeignKey(d => d.TeamName)
+                    .HasConstraintName("fk_TeamName2");
+            });
+
+            modelBuilder.Entity<Team>(entity =>
+            {
+                entity.HasKey(e => e.TeamName);
+
+                entity.Property(e => e.TeamName)
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .ValueGeneratedNever();
+            });
+        }
+    }
+}
